@@ -8,13 +8,7 @@
     <packaging>jar</packaging>
 
     <name>exception-core</name>
-    <url>http://maven.apache.org</url>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.compiler.source>11</maven.compiler.source>
-    </properties>
+    <url>https://github.com/ezhov-da/exceptions-presentation/tree/main/exception-core</url>
 
     <dependencies>
     </dependencies>
