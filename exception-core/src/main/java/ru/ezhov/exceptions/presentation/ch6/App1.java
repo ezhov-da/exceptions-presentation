@@ -13,6 +13,22 @@ import java.util.List;
 
 /**
  * Есть ли жизнь без исключений?
+ * <p>
+ * В данном примере мы заменили контракты хранилища и сервиса на использование Try.
+ * <p>
+ * Из плюсов:
+ * - Контракт явно говорит о том, что может произойти ошибка
+ * - Лишились многословных конструкций try-catch
+ * - Обработка исключения на верхнем уровне
+ * <p>
+ * Из минусов:
+ * - Новый подход и библиотека
+ * - Перехват Throwable, а это грозит и перехватом Error
+ * - Потеряли возможность понимать какое исключение может прийти и соответственно реагировать на него
+ * <p>
+ * Kotlin
+ *
+ * @see ru.ezhov.exceptions.presentation.ch6.App2
  */
 public class App1 {
     interface BookRepository {
@@ -21,42 +37,20 @@ public class App1 {
         Try<String> bookById(String id);
     }
 
-    private static class ClientException extends Exception {
-        private final String clientMessage;
-
-        public ClientException(String message, String clientMessage, Throwable cause) {
-            super(message, cause);
-            this.clientMessage = clientMessage;
-        }
-
-        public String getClientMessage() {
-            return clientMessage;
-        }
-    }
-
-    private static class BookRepositoryException extends ClientException {
-        public BookRepositoryException(String message, String clientMessage, Throwable cause) {
-            super(message, clientMessage, cause);
-        }
-    }
-
-    private static class BookServiceException extends ClientException {
-        public BookServiceException(String message, String clientMessage, Throwable cause) {
-            super(message, clientMessage, cause);
-        }
-    }
-
     public static void main(String[] args) {
-        try {
-            BookService service = new BookService(new DbBookRepository(), new JacksonBookRepository());
-            System.out.println(service.all());
-            System.out.println(service.bookById("123"));
-        } catch (BookServiceException ex) {
-            ex.printStackTrace();
-            System.err.println(ex.getClientMessage());
-        } catch (Exception ex) {
-            System.err.println("An unexpected error occurred when get all books");
-            ex.printStackTrace();
+        BookService service = new BookService(new DbBookRepository(), new JacksonBookRepository());
+        Try<List<String>> all = service.all();
+        if (all.isSuccess()) {
+            System.out.println(all.get());
+        } else {
+            all.getCause().printStackTrace();
+        }
+
+        Try<String> book = service.bookById("123");
+        if (book.isSuccess()) {
+            System.out.println(book.get());
+        } else {
+            book.getCause().printStackTrace();
         }
     }
 
@@ -69,28 +63,15 @@ public class App1 {
             this.secondaryBookRepository = secondaryBookRepository;
         }
 
-        List<String> all() throws BookServiceException {
-            try {
-                try {
-                    return primaryBookRepository.all();
-                } catch (BookRepositoryException ex) {
-                    return secondaryBookRepository.all();
-                }
-            } catch (BookRepositoryException ex) {
-                throw new BookServiceException("Error when get books", "Error when get books, please try later", ex);
-            }
+        Try<List<String>> all() {
+            return primaryBookRepository
+                    .all()
+                    .onFailure(t -> secondaryBookRepository.all()); // можно обработать ошибку
         }
 
-        String bookById(String id) throws BookServiceException {
-            try {
-                try {
-                    return primaryBookRepository.bookById(id);
-                } catch (BookRepositoryException ex) {
-                    return secondaryBookRepository.bookById(id);
-                }
-            } catch (BookRepositoryException ex) {
-                throw new BookServiceException("Error when get book by " + id, "Error when get book, please try later", ex);
-            }
+        Try<String> bookById(String id) {
+            return primaryBookRepository.bookById(id)
+                    .onFailure(t -> secondaryBookRepository.bookById(id));
         }
     }
 
@@ -98,63 +79,64 @@ public class App1 {
         private final String rawBooks = "[\"Book 1\", \"Book 2\"";
 
         @Override
-        public List<String> all() throws BookRepositoryException {
-            try {
-                return new ObjectMapper().readValue(rawBooks, new TypeReference<>() {
-                });
-            } catch (JsonProcessingException e) {
-                throw new BookRepositoryException("Error when get books", "Error when get books, please try later", e);
-            }
+        public Try<List<String>> all() {
+            return Try.ofSupplier(() ->
+                    {
+                        try {
+                            return new ObjectMapper().readValue(rawBooks, new TypeReference<>() {
+                            });
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
         }
 
         @Override
-        public String bookById(String id) throws BookRepositoryException {
-            try {
-                return new ObjectMapper().readValue(rawBooks, new TypeReference<List<String>>() {
-                }).stream().filter(b -> b.equals(id)).findFirst().get();
-            } catch (JsonProcessingException e) {
-                throw new BookRepositoryException(
-                        "Error when get book by " + id,
-                        "Error when get book, please try later",
-                        e
-                );
-            }
+        public Try<String> bookById(String id) {
+            return Try.ofSupplier(() ->
+            {
+                try {
+                    return new ObjectMapper().readValue(rawBooks, new TypeReference<List<String>>() {
+                    }).stream().filter(b -> b.equals(id)).findFirst().get();
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
     }
 
     private static class DbBookRepository implements BookRepository {
         @Override
-        public List<String> all() throws BookRepositoryException {
-            try {
-                DriverManager.getConnection("connection")
-                        .createStatement().executeQuery("SELECT NAME FROM BOOK");
-                // здесь обработка
-                return new ArrayList<>();
-            } catch (SQLException e) {
-                throw new BookRepositoryException(
-                        "Error when get books",
-                        "Error when get books, please try later",
-                        e
-                );
-            }
+        public Try<List<String>> all() {
+            return Try.ofSupplier(() ->
+            {
+                try {
+                    DriverManager.getConnection("connection")
+                            .createStatement().executeQuery("SELECT NAME FROM BOOK");
+                    // здесь обработка
+                    return new ArrayList<>();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
 
         @Override
-        public String bookById(String id) throws BookRepositoryException {
-            try {
-                PreparedStatement ps = DriverManager.getConnection("connection")
-                        .prepareStatement("SELECT NAME FROM BOOK WHERE ID = ?");
-                ps.setString(1, id);
-                ps.executeQuery();
-                // здесь обработка
-                return "DDD";
-            } catch (SQLException e) {
-                throw new BookRepositoryException(
-                        "Error when get book by " + id,
-                        "Error when get book, please try later",
-                        e
-                );
-            }
+        public Try<String> bookById(String id) {
+            return Try.ofSupplier(() ->
+            {
+                try {
+                    PreparedStatement ps = DriverManager.getConnection("connection")
+                            .prepareStatement("SELECT NAME FROM BOOK WHERE ID = ?");
+                    ps.setString(1, id);
+                    ps.executeQuery();
+                    // здесь обработка
+                    return "DDD";
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
     }
 }
