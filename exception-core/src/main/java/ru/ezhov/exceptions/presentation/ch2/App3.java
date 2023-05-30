@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Итак, книги у нас хронятся в БД, сейчас не важно в какой именно.
+ * Итак, книги у нас хранятся в БД, сейчас не важно в какой именно.
  * Используем JDBC для их получения.
  */
 public class App3 {
@@ -40,6 +40,8 @@ public class App3 {
      * Как мы поступим?
      * <p>
      * Верно, так же как и в предыдущий раз, тем более, что IDEA из коробки предлагает такой вариант.
+     *
+     * @see App4
      */
     private static class DbBookRepository implements BookRepository {
         @Override
