@@ -15,6 +15,8 @@ import java.sql.SQLException
  *
  * Из минусов:
  * - Новый подход и библиотека
+ *
+ * @see презентация
  */
 
 fun main(args: Array<String>) {

@@ -26,8 +26,8 @@ import java.util.List;
  * - Перехват Throwable, а это грозит и перехватом Error
  * - Потеряли возможность понимать какое исключение может прийти и соответственно реагировать на него
  * <p>
- * Kotlin
  *
+ * @see Kotlin
  * @see ru.ezhov.exceptions.presentation.ch6.App2
  */
 public class App1 {
