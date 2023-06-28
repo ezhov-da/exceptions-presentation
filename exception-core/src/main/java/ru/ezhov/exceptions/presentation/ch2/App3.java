@@ -8,6 +8,8 @@ import java.util.List;
 /**
  * Итак, книги у нас хранятся в БД, сейчас не важно в какой именно.
  * Используем JDBC для их получения.
+ *
+ * @see DbBookRepository
  */
 public class App3 {
     public static void main(String[] args) {

@@ -22,6 +22,8 @@ public class App7 {
 
     /**
      * Создадим собственное проверяемое исключение для сервиса и добавим его в сигнатуру метода
+     *
+     * @see BookService#all()
      */
     private static class BookServiceException extends Exception {
         public BookServiceException(String message, Exception cause) {
@@ -51,7 +53,7 @@ public class App7 {
      * Например, если в методе получения данных может произойти ошибка и необходимо пользователя об этом уведомить,
      * именно аналитик фиксирует это в контракте, в противном случае можем получить 500 "Неожиданная ошибка".
      *
-     * @see App2
+     * Презентация!
      */
     public static void main(String[] args) {
         try {

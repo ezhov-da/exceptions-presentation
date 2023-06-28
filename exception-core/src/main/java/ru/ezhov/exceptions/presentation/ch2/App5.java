@@ -20,6 +20,8 @@ public class App5 {
      * 2. добавляем его в сигшнатуру метода
      * <p>
      * Давайте посмотрим, как изменилась работа с исключениями в нашем коде.
+     *
+     * @see JacksonBookRepository
      */
     interface BookRepository {
         List<String> all() throws BookRepositoryException;
@@ -61,11 +63,11 @@ public class App5 {
          * <p>
          * Чем он плох?
          * 1. Отсутствие явного контракта - как следствие сложная обработка исключительных ситуаций на уровнях выше
-         * 2. "Многа букафф" для обработки ошибки
+         * 2. "Многа букафф" для обработки ошибки в сервисе
          * <p>
          * Чем он хоршо?
          * 1. Ненужно заботиться об ошибках на уровне выше и в случае проблем можно сказать "Кто же знал :)"
-         * 2. "Мало букафф" :)
+         * 2. "Мало букафф" на уровне выше :)
          * <p>
          * Все мы помним, что уровнем выше находится наш уровень представления.
          * Для консольного приложения - это консоль
@@ -93,6 +95,9 @@ public class App5 {
     private static class JacksonBookRepository implements BookRepository {
         private final String rawBooks = "[\"Book 1\", \"Book 2\"";
 
+        /**
+         * @see BookService#all
+         */
         @Override
         public List<String> all() throws BookRepositoryException {
             try {

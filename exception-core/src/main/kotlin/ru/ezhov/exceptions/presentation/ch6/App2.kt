@@ -9,9 +9,14 @@ import java.sql.DriverManager
 import java.sql.SQLException
 
 /**
+ * @see JacksonBookRepository
+ * @see DbBookRepository
+ * @see BookService
+ * @see main
+ *
  * Из плюсов:
  * - Проявленное исключение в контракте
- * - Отсутствие конструкции try-catch
+ * - Отсутствие конструкции try-catch в бизнес логике
  *
  * Из минусов:
  * - Новый подход и библиотека

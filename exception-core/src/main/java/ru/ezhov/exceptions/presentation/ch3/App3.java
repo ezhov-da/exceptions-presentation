@@ -66,6 +66,10 @@ public class App3 {
      * добавив в исключение дополнительное поле.
      * <p>
      * Как изменился наш код?
+     * @see ClientException
+     * @see JacksonBookRepository
+     * @see BookService
+     * @see App3#main
      * <p>
      * Конечно, указание сообщений для пользователя на уровне хранилища несколько противоречит концепции
      * обязанности уровней приложения. Но ни кто не обязывает указывать сообщение на уровне хранилища, возможно,
@@ -75,7 +79,6 @@ public class App3 {
      * и проявить опасные места в коде.
      *
      * @see презентация
-     * @see ru.ezhov.exceptions.presentation.ch4.App1
      */
     public static void main(String[] args) {
         try {

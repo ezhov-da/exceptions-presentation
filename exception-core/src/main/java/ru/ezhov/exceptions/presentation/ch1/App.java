@@ -10,7 +10,8 @@ public class App {
             String fileTextChecked = readFileWithCheckedException();
         } catch (IOException e) {
             // 3 Можно заметить, что при обработке проверяемых исключений необходимо
-            // писать больше кода и заботиться об обработке
+            // писать больше кода и заботиться об обработке.
+            // Возврат в презентацию.
             System.err.println("Error");
         }
 
